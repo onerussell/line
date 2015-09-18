@@ -1,0 +1,27 @@
+{
+  "name": "line",
+  "version": "0.0.1",
+  "description": "semple data visualization library",
+  "main": "index.js",
+  "dependencies": {
+    "d3": "^3.5.6"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/onerussell/line.git"
+  },
+  "keywords": [
+    "charts",
+    "d3"
+  ],
+  "author": "Ruslan Alekseev",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/onerussell/line/issues"
+  },
+  "homepage": "https://github.com/onerussell/line#readme"
+}
