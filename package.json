@@ -1,7 +1,7 @@
 {
   "name": "line",
   "version": "0.0.1",
-  "description": "semple data visualization library",
+  "description": "sample data visualization library",
   "main": "index.js",
   "dependencies": {
     "d3": "^3.5.6"

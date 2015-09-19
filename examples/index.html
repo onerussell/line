@@ -32,51 +32,49 @@
             {
                 type: "chart",
                 properties: {
-                    render: "svg"
+                    render: "svg",
+                    "width": 500,
+                    "height": 200,
+                    "padding": {"top": 10, "left": 30, "bottom": 30, "right": 10},
+                    "scales": [
+                        {
+                            "name": "x",
+                            "type": "ordinal",
+                            "range": "width",
+                            "domain": {"data": "table", "field": "x"}
+                        },
+                        {
+                            "name": "y",
+                            "type": "linear",
+                            "range": "height",
+                            "domain": {"data": "table", "field": "y"},
+                            "nice": true
+                        }
+                    ],
+                    "axes": [
+                        {"type": "x", "scale": "x"},
+                        {"type": "y", "scale": "y"}
+                    ],
                 },
                 elements: [
 
                     {
-                        "type": "area",//rect, symbol, path, arc, area, line, rule, image, text, group ...
+                        "type": "rect",//rect, symbol, path, arc, area, line, rule, image, text, group ...
                         "data": null,
                         "from": {"data": "table"},
                         "properties": {
                             "enter": {
-                                "interpolate": {"value": "monotone"},
                                 "x": {"scale": "x", "field": "x"},
+                                "width": {"scale": "x", "band": true, "offset": -1},
                                 "y": {"scale": "y", "field": "y"},
-                                "y2": {"scale": "y", "value": 0},
-                                "fill": {"value": "steelblue"}
+                                "y2": {"scale": "y", "value": 0}
                             },
                             "update": {
-                                "fillOpacity": {"value": 1}
+                                "fill": {"value": "steelblue"}
                             },
                             "hover": {
-                                "fillOpacity": {"value": 0.5}
-                            },
-                            "width": 500,
-                            "height": 200,
-                            "padding": {"top": 10, "left": 30, "bottom": 30, "right": 10},
-                            "scales": [
-                                {
-                                    "name": "x",
-                                    "type": "linear",
-                                    "range": "width",
-                                    "zero": false,
-                                    "domain": {"data": "table", "field": "x"}
-                                },
-                                {
-                                    "name": "y",
-                                    "type": "linear",
-                                    "range": "height",
-                                    "nice": true,
-                                    "domain": {"data": "table", "field": "y"}
-                                }
-                            ],
-                            "axes": [
-                                {"type": "x", "scale": "x", "ticks": 20},
-                                {"type": "y", "scale": "y"}
-                            ],
+                                "fill": {"value": "red"}
+                            }
                         }
                     }
                 ]
@@ -84,80 +82,89 @@
         ]
     };
 
+    function chartRender() {
+
+    }
+
+    function rectRender() {
+
+    }
+
     function render(element) {
-        var this
-    .
-        tools[element.type]();
+        var node = this.tools[element.type](element);
+
+        return node;
     }
 
     render.provider = d3;
 
     render.tools = {
-        arc: d3.svg.arc
+        chart: chartRender,
+        arc: d3.svg.arc,
+        rect: rectRender,
     }
+    render.root = "body";
 
     function parse(element) {
-
         render(element);
 
         for (var i = 0; i < element.elements.length; i++) {
-
+            render(element.elements[i]);
         }
 
     }
 
     parse(data.elements[0]);
 
-    var width = 960,
-            height = 500,
-            radius = Math.min(width, height) / 2;
+    var margin = {top: 20, right: 20, bottom: 30, left: 40},
+            width = 960 - margin.left - margin.right,
+            height = 500 - margin.top - margin.bottom;
 
-    var color = d3.scale.ordinal()
-            .range(["#98abc5", "#8a89a6", "#7b6888", "#6b486b", "#a05d56", "#d0743c", "#ff8c00"]);
+    var x = d3.scale.ordinal()
+            .rangeRoundBands([0, width], .1);
 
-    var arc = d3.svg.arc()
-            .outerRadius(radius - 10)
-            .innerRadius(0);
+    var y = d3.scale.linear()
+            .range([height, 0]);
 
-    var pie = d3.layout.pie()
-            .sort(null)
-            .value(function (d) {
-                return d.population;
-            });
+    var xAxis = d3.svg.axis()
+            .scale(x)
+            .orient("bottom");
+
+    var yAxis = d3.svg.axis()
+            .scale(y)
+            .orient("left")
+            .ticks(10, "%");
 
     var svg = d3.select("body").append("svg")
-            .attr("width", width)
-            .attr("height", height)
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
             .append("g")
-            .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-    d3.csv("data.csv", function (error, data) {
+    d3.tsv("data.tsv", type, function (error, data) {
+        if (error) throw error;
 
-        data.forEach(function (d) {
-            d.population = +d.population;
-        });
+        x.domain(data.map(function (d) {
+            return d.letter;
+        }));
+        y.domain([0, d3.max(data, function (d) {
+            return d.frequency;
+        })]);
 
-        var g = svg.selectAll(".arc")
-                .data(pie(data))
-                .enter().append("g")
-                .attr("class", "arc");
-
-        g.append("path")
-                .attr("d", arc)
-                .style("fill", function (d) {
-                    return color(d.data.age);
-                });
-
-        g.append("text")
-                .attr("transform", function (d) {
-                    return "translate(" + arc.centroid(d) + ")";
+        svg.selectAll(".bar")
+                .data(data)
+                .enter().append("rect")
+                .attr("class", "bar")
+                .attr("x", function (d) {
+                    return x(d.letter);
                 })
-                .attr("dy", ".35em")
-                .style("text-anchor", "middle")
-                .text(function (d) {
-                    return d.data.age;
+                .attr("width", x.rangeBand())
+                .attr("y", function (d) {
+                    return y(d.frequency);
+                })
+                .attr("height", function (d) {
+                    return height - y(d.frequency);
                 });
-
     });
 
 </script>
