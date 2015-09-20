@@ -10,34 +10,70 @@ var Document = React.createClass({
 
 var Chart = React.createClass({
   getInitialState: function () {
+    var data = [
+      {
+        "name": "table",
+        "values": [
+          {"x": 1, "y": 28}, {"x": 2, "y": 55},
+          {"x": 3, "y": 43}, {"x": 4, "y": 91},
+          {"x": 5, "y": 81}, {"x": 6, "y": 53},
+          {"x": 7, "y": 19}, {"x": 8, "y": 87},
+          {"x": 9, "y": 52}, {"x": 10, "y": 48},
+          {"x": 11, "y": 24}, {"x": 12, "y": 49},
+          {"x": 13, "y": 87}, {"x": 14, "y": 66},
+          {"x": 15, "y": 17}, {"x": 16, "y": 27},
+          {"x": 17, "y": 68}, {"x": 18, "y": 16},
+          {"x": 19, "y": 49}, {"x": 20, "y": 15}
+        ]
+      }
+    ];
+
+    var x = d3.scale.ordinal()
+      .rangeRoundBands([0, this.props.width], .1);
+
+    var y = d3.scale.linear()
+      .range([this.props.height, 0]);
+
+    x.domain(data[0].values.map(function (d) {
+      return d.x;
+    }));
+    y.domain([0, d3.max(data[0].values, function (d) {
+      return d.y;
+    })]);
+
     return {
-      data: [
-        {
-          "name": "table",
-          "values": [
-            {"x": 1, "y": 28}, {"x": 2, "y": 55},
-            {"x": 3, "y": 43}, {"x": 4, "y": 91},
-            {"x": 5, "y": 81}, {"x": 6, "y": 53},
-            {"x": 7, "y": 19}, {"x": 8, "y": 87},
-            {"x": 9, "y": 52}, {"x": 10, "y": 48},
-            {"x": 11, "y": 24}, {"x": 12, "y": 49},
-            {"x": 13, "y": 87}, {"x": 14, "y": 66},
-            {"x": 15, "y": 17}, {"x": 16, "y": 27},
-            {"x": 17, "y": 68}, {"x": 18, "y": 16},
-            {"x": 19, "y": 49}, {"x": 20, "y": 15}
-          ]
+      data: data,
+      scales: {
+        x: {
+          "name": "x",
+          "type": "ordinal",
+          "range": "width",
+          "domain": {"data": "table", "field": "x"},
+          "value": x
+        },
+        y: {
+          "name": "y",
+          "type": "linear",
+          "range": "height",
+          "domain": {"data": "table", "field": "y"},
+          "nice": true,
+          "value": y
         }
-      ]
+      }
     }
   },
   render: function () {
     console.log(this.state);
     return (
-      <svg>
-        {this.state.data[0].values.map(function (item) {
-          console.log(item);
-          return <Rect x={20} y={20} width={20} height={20}/>;
-        })}
+      <svg width={this.props.width} height={this.props.height}>
+        {this.state.data[0].values.map((function (item) {
+          console.log(this.state.scales.x.value);
+
+          return <Rect x={this.state.scales.x.value(item.x)}
+                       y={this.state.scales.y.value(item.y)}
+                       width={this.state.scales.x.value.rangeBand()}
+                       height={this.props.height-this.state.scales.y.value(item.y)}/>;
+        }).bind(this))}
       </svg>
     );
   },
@@ -46,7 +82,7 @@ var Chart = React.createClass({
 var Rect = React.createClass({
   render: function () {
     return (
-      <rect fill="blue" x={this.props.x} y={this.props.y} width={this.props.width} height={this.props.height}>
+      <rect fill="orange" x={this.props.x} y={this.props.y} width={this.props.width} height={this.props.height}>
       </rect>
     );
   }
@@ -184,15 +220,6 @@ function trash() {
 
   var y = d3.scale.linear()
     .range([height, 0]);
-
-  var xAxis = d3.svg.axis()
-    .scale(x)
-    .orient("bottom");
-
-  var yAxis = d3.svg.axis()
-    .scale(y)
-    .orient("left")
-    .ticks(10, "%");
 
   var svg = d3.select("body").append("svg")
     .attr("width", width + margin.left + margin.right)
