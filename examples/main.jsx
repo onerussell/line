@@ -1,48 +1,70 @@
-var Document = React.createClass({
+var ElementMixin = {
+  renderElement: function (element) {
+    switch (element.type) {
+      case 'chart':
+      {
+        return <Chart data={element}></Chart>;
+      }
+      case 'rect':
+      {
+        return element.data[0].values.map((function (item) {
+          return <Rect data={element}
+                       x={this.state.scales.x.value(item.x)}
+                       y={this.state.scales.y.value(item.y)}
+                       width={this.state.scales.x.value.rangeBand()}
+                       height={this.state.properties.height-this.state.scales.y.value(item.y)}/>;
+        }).bind(this));
+      }
+      default:
+      {
+        return <div></div>;
+      }
+    }
+  }
+};
+
+var Qb = React.createClass({
+  mixins: [ElementMixin],
+  getInitialState: function () {
+    return {
+      data: this.props.data.data,
+      elements: this.props.data.elements,
+      properties: this.props.data.properties
+    }
+  },
   render: function () {
     return (
       <div>
-        {this.props.children}
+        {this.state.elements.map(function (element) {
+          element.data = this.state.data;
+          return this.renderElement(element)
+        }.bind(this))}
       </div>
     );
   }
 });
 
 var Chart = React.createClass({
+  mixins: [ElementMixin],
   getInitialState: function () {
-    var data = [
-      {
-        "name": "table",
-        "values": [
-          {"x": 1, "y": 28}, {"x": 2, "y": 55},
-          {"x": 3, "y": 43}, {"x": 4, "y": 91},
-          {"x": 5, "y": 81}, {"x": 6, "y": 53},
-          {"x": 7, "y": 19}, {"x": 8, "y": 87},
-          {"x": 9, "y": 52}, {"x": 10, "y": 48},
-          {"x": 11, "y": 24}, {"x": 12, "y": 49},
-          {"x": 13, "y": 87}, {"x": 14, "y": 66},
-          {"x": 15, "y": 17}, {"x": 16, "y": 27},
-          {"x": 17, "y": 68}, {"x": 18, "y": 16},
-          {"x": 19, "y": 49}, {"x": 20, "y": 15}
-        ]
-      }
-    ];
 
     var x = d3.scale.ordinal()
-      .rangeRoundBands([0, this.props.width], .1);
+      .rangeRoundBands([0, this.props.data.properties.width], .1);
 
     var y = d3.scale.linear()
-      .range([this.props.height, 0]);
+      .range([this.props.data.properties.height, 0]);
 
-    x.domain(data[0].values.map(function (d) {
+    x.domain(this.props.data.data[0].values.map(function (d) {
       return d.x;
     }));
-    y.domain([0, d3.max(data[0].values, function (d) {
+    y.domain([0, d3.max(this.props.data.data[0].values, function (d) {
       return d.y;
     })]);
 
     return {
-      data: data,
+      data: this.props.data.data,
+      elements: this.props.data.elements,
+      properties: this.props.data.properties,
       scales: {
         x: {
           "name": "x",
@@ -63,23 +85,26 @@ var Chart = React.createClass({
     }
   },
   render: function () {
-    console.log(this.state);
     return (
-      <svg width={this.props.width} height={this.props.height}>
-        {this.state.data[0].values.map((function (item) {
-          console.log(this.state.scales.x.value);
-
-          return <Rect x={this.state.scales.x.value(item.x)}
-                       y={this.state.scales.y.value(item.y)}
-                       width={this.state.scales.x.value.rangeBand()}
-                       height={this.props.height-this.state.scales.y.value(item.y)}/>;
-        }).bind(this))}
+      <svg width={this.props.data.properties.width} height={this.props.data.properties.height}>
+        {this.state.elements.map(function (element) {
+          element.data = this.state.data;
+          return this.renderElement(element)
+        }.bind(this))}
       </svg>
     );
   },
 });
 
 var Rect = React.createClass({
+  mixins: [ElementMixin],
+  getInitialState: function () {
+    return {
+      data: this.props.data.data,
+      elements: this.props.data.elements,
+      properties: this.props.data.properties
+    }
+  },
   render: function () {
     return (
       <rect fill="orange" x={this.props.x} y={this.props.y} width={this.props.width} height={this.props.height}>
@@ -88,21 +113,7 @@ var Rect = React.createClass({
   }
 });
 
-React.render(
-  <Document>
-    <Chart width={500} height={500}>
-    </Chart>
-  </Document>,
-  document.getElementById('div')
-);
-
-
-/*
- --Document data
- --Chart scale.x.y
- --Rect
- */
-var data = {
+var model = {
   "type": "document",
   "data": [
     {
@@ -176,81 +187,7 @@ var data = {
   ]
 };
 
-function trash() {
-
-  function chartRender() {
-
-  }
-
-  function rectRender() {
-
-  }
-
-  function render(element) {
-    var node = this.tools[element.type](element);
-    return node;
-  }
-
-  render.provider = d3;
-
-  render.tools = {
-    chart: chartRender,
-    arc: d3.svg.arc,
-    rect: rectRender,
-  }
-  render.root = "body";
-
-  function parse(element) {
-    render(element);
-
-    for (var i = 0; i < element.elements.length; i++) {
-      render(element.elements[i]);
-    }
-
-  }
-
-  parse(data.elements[0]);
-
-  var margin = {top: 20, right: 20, bottom: 30, left: 40},
-    width = 960 - margin.left - margin.right,
-    height = 500 - margin.top - margin.bottom;
-
-  var x = d3.scale.ordinal()
-    .rangeRoundBands([0, width], .1);
-
-  var y = d3.scale.linear()
-    .range([height, 0]);
-
-  var svg = d3.select("body").append("svg")
-    .attr("width", width + margin.left + margin.right)
-    .attr("height", height + margin.top + margin.bottom)
-    .append("g")
-    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-  d3.tsv("data.tsv", type, function (error, data) {
-    if (error) throw error;
-
-    x.domain(data.map(function (d) {
-      return d.letter;
-    }));
-    y.domain([0, d3.max(data, function (d) {
-      return d.frequency;
-    })]);
-
-    svg.selectAll(".bar")
-      .data(data)
-      .enter().append("rect")
-      .attr("class", "bar")
-      .attr("x", function (d) {
-        return x(d.letter);
-      })
-      .attr("width", x.rangeBand())
-      .attr("y", function (d) {
-        return y(d.frequency);
-      })
-      .attr("height", function (d) {
-        return height - y(d.frequency);
-      });
-  });
-
-}
+React.render(
+  <Qb data={model}/>,
+  document.getElementById('div')
+);
