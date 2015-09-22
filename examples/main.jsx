@@ -162,7 +162,6 @@ var model = {
         ],
       },
       elements: [
-
         {
           "type": "rect",//rect, symbol, path, arc, area, line, rule, image, text, group
           "data": null,
