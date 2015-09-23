@@ -1,6 +1,6 @@
 var ElementMixin = {
   renderElement: function (element) {
-    switch (element.type) {
+    switch (element.type) {//rect, symbol, path, arc, area, line, rule, image, text, group
       case 'chart':
       {
         return <Chart data={element}></Chart>;
@@ -14,6 +14,33 @@ var ElementMixin = {
                        width={this.state.scales.x.value.rangeBand()}
                        height={this.state.properties.height-this.state.scales.y.value(item.y)}/>;
         }).bind(this));
+      }
+      case 'symbol':{
+
+      }
+      case 'path':{
+
+      }
+      case 'arc':{
+
+      }
+      case 'area':{
+
+      }
+      case 'line':{
+
+      }
+      case 'rule':{
+
+      }
+      case 'image':{
+
+      }
+      case 'text':{
+
+      }
+      case 'group':{
+
       }
       default:
       {
