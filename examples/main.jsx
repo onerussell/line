@@ -17,30 +17,38 @@ var ElementMixin = {
       }
       case 'symbol':{
 
+        return <div></div>
       }
       case 'path':{
 
+        return <div></div>
       }
       case 'arc':{
 
+        return <div></div>
       }
       case 'area':{
 
+        return <div></div>
       }
       case 'line':{
 
+        return <div></div>
       }
       case 'rule':{
 
+        return <div></div>
       }
       case 'image':{
 
+        return <div></div>
       }
       case 'text':{
 
+        return <div></div>
       }
       case 'group':{
-
+        return <div></div>
       }
       default:
       {
@@ -48,7 +56,7 @@ var ElementMixin = {
       }
     }
   }
-  //all 
+  //all
 };
 
 var Qb = React.createClass({
