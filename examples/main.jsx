@@ -141,6 +141,23 @@ var Rect = React.createClass({
   }
 });
 
+var Group = React.createClass({
+  mixins: [ElementMixin],
+  getInitialState: function () {
+    return {
+      data: this.props.data.data,
+      elements: this.props.data.elements,
+      properties: this.props.data.properties
+    }
+  },
+  render: function () {
+    return (
+      <g>
+      </g>
+    );
+  }
+});
+
 var model = {
   "type": "document",
   "data": [
