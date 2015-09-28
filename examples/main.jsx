@@ -76,11 +76,9 @@ var Chart = React.createClass({
   mixins: [ElementMixin],
   getInitialState: function () {
 
-    var x = d3.scale.ordinal()
-      .rangeRoundBands([0, this.props.data.properties.width], .1);
+    var x = d3.scale.ordinal().rangeRoundBands([0, this.props.data.properties.width], .1);
 
-    var y = d3.scale.linear()
-      .range([this.props.data.properties.height, 0]);
+    var y = d3.scale.linear().range([this.props.data.properties.height, 0]);
 
     x.domain(this.props.data.data[0].values.map(function (d) {
       return d.x;
